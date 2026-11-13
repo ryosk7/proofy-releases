@@ -14,6 +14,12 @@ only hosts the Olares app packages (`proofy-<version>.tgz`) and the app icon the
 Requirements: Olares 1.12.7 or later, the Router app, and a vision- and reasoning-capable chat model
 (Qwen3.8-27B (llama.cpp)); EmbeddingGemma is recommended.
 
+## Let Lares do it
+
+[LARES.md](LARES.md) is a runbook for the Olares assistant **Lares**: give it the link
+`https://github.com/ryosk7/proofy-releases/blob/main/LARES.md` and ask it to check, install or update Proofy following it.
+Lares shows each change and waits for your approval before running it.
+
 ## Versions
 
 | Package | App name | Notes |
