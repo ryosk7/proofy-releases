@@ -25,7 +25,8 @@ A person can read it too; the illustrated manual for people is separate.
 |---|---|---|---|
 | `router` | Router | yes | AI gateway; Proofy calls every model through it. Proofy cannot install without it. |
 | `llamacppqwen3827bggufv3` | Qwen3.8-27B (llama.cpp) | yes | Chat model with **vision** and **reasoning**: proofreading, drafting and reading drawings. Needs an NVIDIA GPU with about 23 GiB VRAM. |
-| `embeddinggemmav3` | EmbeddingGemma | recommended | Embedding model used to pick manual items for long manuals. |
+| `ollamallmbasev3` set to `qwen3-embedding:8b` | Ollama Engine Base (shows as "Qwen3 Embedding 8B" once set up) | recommended | Embedding model that picks manual items for long manuals; best multilingual retrieval. Router lists it as `Olares/qwen3-embedding:8b`. |
+| `embeddinggemmav3` | EmbeddingGemma | alternative | Lighter embedding model; use it instead when the GPU has no room for Qwen3 Embedding. One embedding model is enough. |
 | `proofy` | Proofy | — | The app itself, installed from an uploaded package (source `upload`). |
 
 Olares must be **1.12.7 or later** (`olares-cli --version` prints the CLI version; the OS version is shown in Settings).
@@ -45,8 +46,9 @@ olares-cli market list --mine -o json
 curl -s https://api.github.com/repos/ryosk7/proofy-releases/releases/latest
 ```
 
-From the first output, read `state` and `version` of `router`, `llamacppqwen3827bggufv3`, `embeddinggemmav3` and
-`proofy`. From the second, read the latest version (`tag_name` without the leading `v`).
+From the first output, read `state` and `version` of `router`, `llamacppqwen3827bggufv3`, `proofy`, and of the embedding
+model: a row whose `title` contains `Qwen3 Embedding` (its `name` may be `ollamallmbasev3` or a variant such as
+`ollamallmbasev352cc1f`), or else `embeddinggemmav3`. Either embedding model counts as present. From the second, read the latest version (`tag_name` without the leading `v`).
 
 Report a table like this, then propose the next section:
 
@@ -54,7 +56,7 @@ Report a table like this, then propose the next section:
 |---|---|---|---|
 | Router | 1.1.3 | running | ok |
 | Qwen3.8-27B | 1.0.20 | running | ok |
-| EmbeddingGemma | 1.1.5 | running | ok |
+| Qwen3 Embedding 8B | 1.3.18 | running | ok |
 | Proofy | 2.2.2 (latest 2.2.2) | running | up to date |
 
 Decide:
@@ -68,12 +70,16 @@ Decide:
 ## 4. Install a missing model app (needs approval)
 
 Install only the apps from section 1 that are missing, in this order: `router`, then `llamacppqwen3827bggufv3`, then
-`embeddinggemmav3`.
+the embedding model (Qwen3 Embedding 8B; EmbeddingGemma only if the user asks for the lighter one).
 
 ```sh
 olares-cli market install router --watch
 olares-cli market install llamacppqwen3827bggufv3 --compute-mode nvidia --watch --watch-timeout 1h
-olares-cli market install embeddinggemmav3 --watch --watch-timeout 30m
+olares-cli market install ollamallmbasev3 \
+  --env MODEL_SOURCE=ollama://qwen3-embedding:8b --env MODEL_NAME=qwen3-embedding:8b --env MODEL_MODE=embedding \
+  --watch --watch-timeout 1h
+# lighter alternative, only if asked:
+# olares-cli market install embeddinggemmav3 --watch --watch-timeout 30m
 ```
 
 - The Qwen model downloads tens of GB; a long wait is normal.
@@ -108,7 +114,9 @@ olares-cli market install proofy -s upload --version <version> --watch
 
 Success: `proofy` shows `state: running` and `version: <version>` with `source: upload`.
 Then tell the user: open Proofy from the Launchpad, and (administrator) check **設定 → AI の設定**:
-文章を扱うモデル = `Olares/unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_XL`, 検索用の埋め込みモデル = `Olares/embeddinggemma-300m`, then 保存.
+文章を扱うモデル = `Olares/unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_XL`, 検索用の埋め込みモデル = `Olares/qwen3-embedding:8b`
+(or `Olares/embeddinggemma-300m`), then 保存. Proofy re-embeds the registered manuals by itself after the embedding model
+changes (a few minutes).
 
 ## 7. Update Proofy (needs approval)
 

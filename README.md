@@ -12,7 +12,9 @@ only hosts the Olares app packages (`proofy-<version>.tgz`) and the app icon the
 3. First time: install it. Later versions: upload the new `.tgz`, then press **Update** on the Proofy card.
 
 Requirements: Olares 1.12.7 or later, the Router app, and a vision- and reasoning-capable chat model
-(Qwen3.8-27B (llama.cpp)); EmbeddingGemma is recommended.
+(Qwen3.8-27B (llama.cpp)); an embedding model is recommended: Qwen3 Embedding 8B (Market: Ollama Engine Base with
+`MODEL_SOURCE=ollama://qwen3-embedding:8b`, `MODEL_NAME=qwen3-embedding:8b`, `MODEL_MODE=Embedding`), or the lighter
+EmbeddingGemma.
 
 ## Let Lares do it
 
