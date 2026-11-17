@@ -25,7 +25,7 @@ A person can read it too; the illustrated manual for people is separate.
 |---|---|---|---|
 | `router` | Router | yes | AI gateway; Proofy calls every model through it. Proofy cannot install without it. |
 | `llamacppqwen3827bggufv3` | Qwen3.8-27B (llama.cpp) | yes | Chat model with **vision** and **reasoning**: proofreading, drafting and reading drawings. Needs an NVIDIA GPU with about 23 GiB VRAM. |
-| `ollamallmbasev3` set to `qwen3-embedding:8b` | Ollama Engine Base (shows as "Qwen3 Embedding 8B" once set up) | recommended | Embedding model that picks manual items for long manuals; best multilingual retrieval. Router lists it as `Olares/qwen3-embedding:8b`. |
+| `llamacppllmbasev3` cloned as "Qwen3 Embedding 8B (llama.cpp)" (section 4) | llama.cpp Engine Base, Qwen3 Embedding 8B Q4_K_M on the CPU | recommended | Embedding model that picks manual items for long manuals; best multilingual retrieval. Router lists it as `Olares/Qwen/Qwen3-Embedding-8B-GGUF:Q4_K_M`. Runs on the CPU (~6 GiB RAM), leaving the GPU to Qwen3.8. |
 | `embeddinggemmav3` | EmbeddingGemma | alternative | Lighter embedding model; use it instead when the GPU has no room for Qwen3 Embedding. One embedding model is enough. |
 | `proofy` | Proofy | — | The app itself, installed from an uploaded package (source `upload`). |
 
@@ -47,8 +47,8 @@ curl -s https://api.github.com/repos/ryosk7/proofy-releases/releases/latest
 ```
 
 From the first output, read `state` and `version` of `router`, `llamacppqwen3827bggufv3`, `proofy`, and of the embedding
-model: a row whose `title` contains `Qwen3 Embedding` (its `name` may be `ollamallmbasev3` or a variant such as
-`ollamallmbasev352cc1f`), or else `embeddinggemmav3`. Either embedding model counts as present. From the second, read the latest version (`tag_name` without the leading `v`).
+model: a row whose `title` contains `Qwen3 Embedding 8B (llama.cpp)` (its `name` is a clone such as
+`llamacppllmbasev314c33e`), or else `embeddinggemmav3`. An older Ollama `Qwen3 Embedding 8B` row is no longer used. Either embedding model counts as present. From the second, read the latest version (`tag_name` without the leading `v`).
 
 Report a table like this, then propose the next section:
 
@@ -56,7 +56,7 @@ Report a table like this, then propose the next section:
 |---|---|---|---|
 | Router | 1.1.3 | running | ok |
 | Qwen3.8-27B | 1.0.20 | running | ok |
-| Qwen3 Embedding 8B | 1.3.18 | running | ok |
+| Qwen3 Embedding 8B (llama.cpp) | 1.2.40 | running | ok |
 | Proofy | 2.6.16 (latest 2.6.16) | running | up to date |
 
 Decide:
@@ -75,9 +75,15 @@ the embedding model (Qwen3 Embedding 8B; EmbeddingGemma only if the user asks fo
 ```sh
 olares-cli market install router --watch
 olares-cli market install llamacppqwen3827bggufv3 --compute-mode nvidia --watch --watch-timeout 1h
-olares-cli market install ollamallmbasev3 \
-  --env MODEL_SOURCE=ollama://qwen3-embedding:8b --env MODEL_NAME=qwen3-embedding:8b --env MODEL_MODE=embedding \
+olares-cli market clone llamacppllmbasev3 --title "Qwen3 Embedding 8B (llama.cpp)" --compute-mode nvidia \
+  --env "MODEL_SOURCE=hf://Qwen/Qwen3-Embedding-8B-GGUF --include Qwen3-Embedding-8B-Q4_K_M.gguf" \
+  --env "MODEL_NAME=Qwen/Qwen3-Embedding-8B-GGUF:Q4_K_M" \
+  --env MODEL_MODE=embedding --env MODEL_SUPPORTS=none \
+  --env "ENGINE_ARGS=-c 2048 -ub 2048 -b 2048 --pooling last -ngl 0 -dev none" \
   --watch --watch-timeout 1h
+# The engine flags live on the model card, which wins over ENGINE_ARGS after the first start; set them there too:
+olares-cli router model spec edit 'Olares/Qwen/Qwen3-Embedding-8B-GGUF:Q4_K_M' \
+  --engine-args "-c 2048 -ub 2048 -b 2048 --pooling last -ngl 0 -dev none" --yes
 # lighter alternative, only if asked:
 # olares-cli market install embeddinggemmav3 --watch --watch-timeout 30m
 ```
@@ -114,7 +120,7 @@ olares-cli market install proofy -s upload --version <version> --watch
 
 Success: `proofy` shows `state: running` and `version: <version>` with `source: upload`.
 Then tell the user: open Proofy from the Launchpad, and (administrator) check **設定 → AI の設定**:
-文章を扱うモデル = `Olares/unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_XL`, 検索用の埋め込みモデル = `Olares/qwen3-embedding:8b`
+文章を扱うモデル = `Olares/unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_XL`, 検索用の埋め込みモデル = `Olares/Qwen/Qwen3-Embedding-8B-GGUF:Q4_K_M`
 (or `Olares/embeddinggemma-300m`), then 保存. Proofy re-embeds the registered manuals by itself after the embedding model
 changes (a few minutes).
 
