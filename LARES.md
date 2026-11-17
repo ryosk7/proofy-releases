@@ -35,7 +35,7 @@ Olares must be **1.12.7 or later** (`olares-cli --version` prints the CLI versio
 
 - Releases: `https://github.com/ryosk7/proofy-releases/releases`
 - Latest release (JSON): `https://api.github.com/repos/ryosk7/proofy-releases/releases/latest`
-  - `tag_name` is `v<version>` (for example `v2.2.2`).
+  - `tag_name` is `v<version>` (for example `v2.6.16`).
   - The asset `proofy-<version>.tgz` is the package; its `browser_download_url` is the download link.
 - Ignore assets named `patentproof-*.tgz` (legacy app, not upgradeable to Proofy 2.x).
 
@@ -57,7 +57,7 @@ Report a table like this, then propose the next section:
 | Router | 1.1.3 | running | ok |
 | Qwen3.8-27B | 1.0.20 | running | ok |
 | Qwen3 Embedding 8B | 1.3.18 | running | ok |
-| Proofy | 2.2.2 (latest 2.2.2) | running | up to date |
+| Proofy | 2.6.16 (latest 2.6.16) | running | up to date |
 
 Decide:
 - A required app is missing → section 4.
@@ -101,7 +101,7 @@ Market → My Olares in the browser.
 Preconditions: `router` and `llamacppqwen3827bggufv3` are `running` (section 3).
 
 ```sh
-# 1. Download the latest package (replace <version>, e.g. 2.2.2)
+# 1. Download the latest package (replace <version>, e.g. 2.6.16)
 curl -fL -o proofy-<version>.tgz \
   https://github.com/ryosk7/proofy-releases/releases/download/v<version>/proofy-<version>.tgz
 
@@ -130,6 +130,8 @@ olares-cli market upgrade proofy -s upload --version <version> --watch
 ```
 
 - Tell the user before starting that Proofy may be unavailable for a few minutes. Data (manuals, history, settings) is kept.
+- App settings entered in Olares (for example the optional Langfuse host and keys) are kept by an update; never change them.
+- Do not start an update while a proofreading run is in progress (Proofy's history shows it as running); wait for it to finish.
 - Never downgrade. If the installed version is newer than the latest release, report it and stop.
 - Success: `proofy` shows `state: running` and the new `version`.
 
